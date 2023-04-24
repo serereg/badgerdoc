@@ -253,11 +253,25 @@ def get_next_and_previous_annotation_tasks(
         .limit(1)
     )
 
+    first_task_query = (
+        db.query(ManualAnnotationTask)
+        .filter(
+            ManualAnnotationTask.user_id == user,
+            ManualAnnotationTask.jobs.has(tenant=x_current_tenant),
+            ManualAnnotationTask.status.in_(active_tasks_states),
+        )
+        .order_by(ManualAnnotationTask.id)
+        .limit(1)
+    )
+
     try:
         next_task = next_task_query.first()
     except AttributeError:
         """AttributeError is raised when the next task cannot be found"""
-        next_task = None
+        try:
+            next_task = first_task_query.first()
+        except AttributeError:
+            next_task = None
 
     return PreviousAndNextTasksSchema(
         previous_task=previous_task, next_task=next_task
