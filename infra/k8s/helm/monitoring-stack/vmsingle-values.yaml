@@ -69,7 +69,7 @@ server:
     service:
       servicePort: 8428
 
-  terminationGracePeriodSeconds: 60
+  terminationGracePeriodSeconds: 600
   
   serviceMonitor:
     enabled: false
