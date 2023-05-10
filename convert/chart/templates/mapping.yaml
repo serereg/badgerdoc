@@ -5,11 +5,11 @@ metadata:
   namespace: "{{ .Release.Namespace }}"
 spec:
   host: "{{ .Release.Namespace }}.badgerdoc.com"
-  connect_timeout_ms: 30000
-  idle_timeout_ms: 50000
+  connect_timeout_ms: 300000
+  idle_timeout_ms: 500000
   prefix: /api/v1/convert/
   service: convert
-  timeout_ms: 30000
+  timeout_ms: 3000000
 ---
 apiVersion: getambassador.io/v2
 kind: Mapping
@@ -18,8 +18,8 @@ metadata:
   namespace: "{{ .Release.Namespace }}"
 spec:
   host: ambassador
-  connect_timeout_ms: 30000
-  idle_timeout_ms: 50000
+  connect_timeout_ms: 300000
+  idle_timeout_ms: 500000
   prefix: /api/v1/convert/
   service: convert
-  timeout_ms: 30000
+  timeout_ms: 3000000
