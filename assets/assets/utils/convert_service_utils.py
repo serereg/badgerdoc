@@ -53,4 +53,5 @@ def post_pdf_to_convert(bucket: str, input_pdf, output_tokens) -> None:
             )
     except requests.exceptions.ConnectionError as e:
         LOGGER.error("Connection error - detail: %s", e)
+        raise
     LOGGER.info("File %s successfully converted", {input_pdf})
