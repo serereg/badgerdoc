@@ -332,21 +332,14 @@ class FileConverter:
         """
         Checks if file format is in the available conversion formats.
         """
-        try:
-            if self.ext == ".html":
-                self.converted_file = self.convert_html()
-            if self.ext == ".pdf":
-                self.converted_file = self.convert_pdf()
-            if self.ext in settings.gotenberg_formats:
-                self.converted_file = self.convert_gotenberg_formats()
-            if self.ext in settings.image_formats:
-                self.converted_file = self.convert_to_jpg()
-        except exceptions.FileConversionError:
-            return False
-        except requests.exceptions.ConnectionError:
-            return False
-
-        return True
+        if self.ext == ".html":
+            self.converted_file = self.convert_html()
+        if self.ext == ".pdf":
+            self.converted_file = self.convert_pdf()
+        if self.ext in settings.gotenberg_formats:
+            self.converted_file = self.convert_gotenberg_formats()
+        if self.ext in settings.image_formats:
+            self.converted_file = self.convert_to_jpg()
 
 
 class FileProcessor:
