@@ -499,6 +499,7 @@ class PipelineStep(BaseModel):
         :return: JSON response.
         """
         r = requests.request(method=method, url=url, json=body)
+        logger.info("= " * 10, f"{url=}", " =" * 10)
         logger.info("fetching url %s, body %s", url, body)
         return r.json()
 
@@ -609,9 +610,11 @@ class Pipeline(BaseModel):
     @staticmethod
     def get_model_urls(model_ids: List[str]) -> Dict[str, str]:
         model_deployed = config.MODELS_URI + config.MODELS_DEPLOYMENT_ENDPOINT
+        logger.warning("* " * 10, f"{model_deployed}", " *" * 10)
         result = PipelineStep.fetch(body={}, url=model_deployed, method="GET")
         url_map = {}
         if config.DIFFERENT_PREPROCESSING_URLS:
+            logger.warning("* " * 10, f"{config.DIFFERENT_PREPROCESSING_URLS}", " *" * 10)
             model_types = http_utils.get_model_types(model_ids)
         for id_ in model_ids:
             for mod in result:
@@ -626,6 +629,7 @@ class Pipeline(BaseModel):
                         )
                     else:
                         url_map[id_] = Pipeline._convert_uri(mod.get("url"))
+        logger.warning("* " * 10, f"{url_map=}", " *" * 10)
         return url_map
 
     def update_model_field(
