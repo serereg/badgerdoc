@@ -258,14 +258,12 @@ class FileConverter:
         self.conversion_status = schemas.ConvertionStatus.CONVERTED_TO_JPG
         return byte_im
 
-    def convert_gotenberg_formats(self) -> bytes:
-        pdf_from_txt = self.convert_to_pdf()
-        file_ = BytesIO(pdf_from_txt)
+    def convert_pdf_to_tokens(self, pdf):
         self.minio_client.put_object(
             bucket_name=self.bucket_storage,
             object_name=self._output_pdf_path,
-            data=file_,
-            length=len(pdf_from_txt),
+            data=BytesIO(pdf),
+            length=len(pdf),
         )
         post_pdf_to_convert(
             self.bucket_storage,
@@ -274,61 +272,22 @@ class FileConverter:
         )
         self.converted_ext = ".pdf"
         self.conversion_status = schemas.ConvertionStatus.CONVERTED_TO_PDF
-        converted_file = self.minio_client.fget_object(  # noqa
-            self.bucket_storage,
-            self._output_pdf_path,
-            self._tmp_file_name,
-        )
-        with open(self._tmp_file_name, "rb") as tmp_file:
-            return tmp_file.read()
+
+    def convert_gotenberg_formats(self) -> bytes:
+        pdf = self.convert_to_pdf()
+        self.convert_pdf_to_tokens(pdf)
+        return pdf
 
     def convert_html(self) -> bytes:
-        pdf_from_html = self.convert_html_to_pdf()
-        file_ = BytesIO(pdf_from_html)
-        self.minio_client.put_object(
-            bucket_name=self.bucket_storage,
-            object_name=self._output_pdf_path,
-            data=file_,
-            length=len(pdf_from_html),
-        )
-        post_pdf_to_convert(
-            self.bucket_storage,
-            self._output_pdf_path,
-            self._output_tokens_path,
-        )
-        self.converted_ext = ".pdf"
-        self.conversion_status = schemas.ConvertionStatus.CONVERTED_TO_PDF
-        converted_file = self.minio_client.fget_object(  # noqa
-            self.bucket_storage,
-            self._output_pdf_path,
-            self._tmp_file_name,
-        )
-        with open(self._tmp_file_name, "rb") as tmp_file:
-            return tmp_file.read()
+        pdf = self.convert_html_to_pdf()
+        self.convert_pdf_to_tokens(pdf)
+        return pdf
 
     def convert_pdf(self) -> bytes:
-        self.minio_client.put_object(
-            bucket_name=self.bucket_storage,
-            object_name=self._output_pdf_path,
-            data=BytesIO(self.file_bytes),
-            length=len(self.file_bytes),
-        )
-        post_pdf_to_convert(
-            self.bucket_storage,
-            self._output_pdf_path,
-            self._output_tokens_path,
-        )
-        self.converted_ext = ".pdf"
-        self.conversion_status = schemas.ConvertionStatus.CONVERTED_TO_PDF
-        converted_file = self.minio_client.fget_object(  # noqa
-            self.bucket_storage,
-            self._output_pdf_path,
-            self._tmp_file_name,
-        )
-        with open(self._tmp_file_name, "rb") as tmp_file:
-            return tmp_file.read()
+        self.convert_pdf_to_tokens(self.file_bytes)
+        return self.file_bytes
 
-    def convert(self) -> Union[bool]:
+    def convert(self):
         """
         Checks if file format is in the available conversion formats.
         """
@@ -449,7 +408,7 @@ class FileProcessor:
         self.conversion_status = converter.conversion_status
         if self.conversion_status is None:
             return True
-        if self.conversion_status != "conversion error":
+        if self.conversion_status != schemas.ConvertionStatus.ERROR:
             self.converted_file = converter.converted_file
 
             self.converted_file_ext = converter.converted_ext
